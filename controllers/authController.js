@@ -2,6 +2,7 @@ import User from "../models/User.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
+import cloudinary from "../config/cloudinary.js";
 
 dotenv.config();
 
@@ -21,43 +22,64 @@ export const generateToken = (userId) => {
 export const register = async (req, res) => {
   try {
     const { name, email, password } = req.body;
-    const avatarUrl = req.file?.path || DEFAULT_IMAGE_URL; // If image uploaded via multer + cloudinary
 
     // Validation
     if (!name || !email || !password) {
       return res.status(400).json({ message: "All fields are required." });
     }
 
-    // Check if user exists
+    // Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(409).json({ message: "User already exists." });
     }
 
-    // Hash password
+    // Upload avatar to Cloudinary if file is present
+    let avatarUrl = DEFAULT_IMAGE_URL;
+
+    if (req.file) {
+      const streamUpload = (buffer) => {
+        return new Promise((resolve, reject) => {
+          const stream = cloudinary.uploader.upload_stream(
+            { folder: "avatars" },
+            (error, result) => {
+              if (error) reject(error);
+              else resolve(result);
+            }
+          );
+          stream.end(buffer);
+        });
+      };
+
+      const result = await streamUpload(req.file.buffer);
+      avatarUrl = result.secure_url;
+    }
+
+    // Hash the password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Create user
+    // Create new user
     const newUser = new User({
       name,
       email,
       password: hashedPassword,
-      avatarUrl, // store image URL if provided
+      avatarUrl,
     });
 
     await newUser.save();
 
     res.status(201).json({
-      success : true,
+      success: true,
       message: "User registered successfully",
       user: {
         id: newUser._id,
         name: newUser.name,
         email: newUser.email,
         avatarUrl: newUser.avatarUrl,
-      }
+      },
     });
+
   } catch (error) {
     console.error("Registration error:", error.message);
     res.status(500).json({ message: "Server error" });
@@ -88,7 +110,7 @@ export const login = async (req, res) => {
 
     // Generate token
     const token = generateToken(user._id);
-    console.log(token);
+    // console.log(token);
     res.setHeader("Authorization", `Bearer ${token}`);
 
     res.status(200).json({

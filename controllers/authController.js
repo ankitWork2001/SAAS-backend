@@ -1,8 +1,9 @@
 import User from "../models/User.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-// import { generateToken } from "../utils/token.js";
+import dotenv from "dotenv";
 
+dotenv.config();
 
 // some constants 
 const JWT_SECRET = process.env.JWT_SECRET || "supersecretkey";
@@ -87,7 +88,8 @@ export const login = async (req, res) => {
 
     // Generate token
     const token = generateToken(user._id);
-    req.setHeader("Authorization", `Bearer ${token}`);
+    console.log(token);
+    res.setHeader("Authorization", `Bearer ${token}`);
 
     res.status(200).json({
       success : true,

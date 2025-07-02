@@ -16,7 +16,7 @@ const app = express();
 
 
 // Middleware Setup
-app.use(helmet()); 
+app.use(helmet());
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -32,8 +32,8 @@ try {
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api", commonRoutes);
-app.use("/ap/user",userRoutes);
-app.use("/api/admin",adminRoutes);
+app.use("/ap/user", userRoutes);
+app.use("/api/admin", adminRoutes);
 
 app.get("/", (req, res) => {
   res.send("API is running...");

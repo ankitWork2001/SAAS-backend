@@ -1,45 +1,38 @@
 import User from "../models/User.js";
-import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import cloudinary from "../config/cloudinary.js";
+import { requestEmailOTP, verifyEmailOTP as verifyOTPUtil } from "../utils/requestEmail.js";
 
 dotenv.config();
 
-// some constants 
 const JWT_SECRET = process.env.JWT_SECRET || "supersecretkey";
+const JWT_EXPIRES_IN = "7d";
 const DEFAULT_IMAGE_URL = "https://designimages.appypie.com/profilepicture/profilepicture-2-portrait-head.jpg";
-const JWT_EXPIRES_IN = "7d";  // expires after 7 days
 
-
-export const generateToken = (userId) => {
-  return jwt.sign({ id: userId }, JWT_SECRET, {
-    expiresIn: JWT_EXPIRES_IN,
-  });
+// JWT token generator
+const generateToken = (userId) => {
+  return jwt.sign({ id: userId }, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
 };
 
-
+// ---------------- REGISTER ----------------
 export const register = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
-
-    // Validation
-    if (!name || !email || !password) {
-      return res.status(400).json({ message: "All fields are required." });
+    let { name, email, password, mobile } = req.body;
+    if (!name || !email || !password || !mobile) {
+      return res.status(400).json({ success: false, message: "All fields are required." });
     }
 
-    // Check if user already exists
+    email = email.toLowerCase().trim();
+
     const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      return res.status(409).json({ message: "User already exists." });
-    }
+    if (existingUser) return res.status(409).json({ success: false, message: "User already exists." });
 
-    // Upload avatar to Cloudinary if file is present
     let avatarUrl = DEFAULT_IMAGE_URL;
 
     if (req.file) {
-      const streamUpload = (buffer) => {
-        return new Promise((resolve, reject) => {
+      const streamUpload = (buffer) =>
+        new Promise((resolve, reject) => {
           const stream = cloudinary.uploader.upload_stream(
             { folder: "avatars" },
             (error, result) => {
@@ -49,123 +42,140 @@ export const register = async (req, res) => {
           );
           stream.end(buffer);
         });
-      };
 
       const result = await streamUpload(req.file.buffer);
       avatarUrl = result.secure_url;
     }
 
-    // Hash the password
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
-
-    // Create new user
-    const newUser = new User({
-      name,
-      email,
-      password: hashedPassword,
-      avatarUrl,
-    });
-
+    const newUser = new User({ name, email, password, mobile, avatarUrl });
     await newUser.save();
+
+    await requestEmailOTP(email);
 
     res.status(201).json({
       success: true,
-      message: "User registered successfully",
+      message: "User registered. Please verify your email.",
       user: {
         id: newUser._id,
         name: newUser.name,
         email: newUser.email,
+        mobile: newUser.mobile,
         avatarUrl: newUser.avatarUrl,
       },
     });
-
-  } catch (error) {
-    console.error("Registration error:", error.message);
-    res.status(500).json({ message: "Server error" });
+  } catch (err) {
+    console.error("Register Error:", err.message);
+    res.status(500).json({ success: false, message: "Server error" });
   }
 };
 
-
+// ---------------- LOGIN ----------------
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
+    if (!email || !password)
+      return res.status(400).json({ success: false, message: "Email and password are required." });
 
-    // Validate input
-    if (!email || !password) {
-      return res.status(400).json({ message: "Email and password are required." });
-    }
+    const user = await User.findOne({ email: email.toLowerCase().trim() });
+    if (!user) return res.status(401).json({ success: false, message: "Invalid credentials." });
 
-    // Find user
-    const user = await User.findOne({ email });
-    if (!user || user.isBlocked) {
-      return res.status(401).json({ message: "Invalid or blocked account." });
-    }
+    if (user.status === "blocked")
+      return res.status(403).json({ success: false, message: "Your account is blocked." });
 
-    // Compare password
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(401).json({ message: "Invalid credentials." });
-    }
+    const isMatch = await user.comparePassword(password);
+    if (!isMatch) return res.status(401).json({ success: false, message: "Invalid credentials." });
 
-    // Generate token
     const token = generateToken(user._id);
-    // console.log(token);
     res.setHeader("Authorization", `Bearer ${token}`);
 
     res.status(200).json({
-      success : true,
+      success: true,
       message: "Login successful",
       user: {
         id: user._id,
         name: user.name,
         email: user.email,
         avatarUrl: user.avatarUrl,
+        isEmailVerified: user.isEmailVerified,
       },
       token,
     });
-  } catch (error) {
-    console.error("Login error:", error.message);
-    res.status(500).json({ message: "Server error" });
+  } catch (err) {
+    console.error("Login Error:", err.message);
+    res.status(500).json({ success: false, message: "Server error" });
   }
 };
 
+// ---------------- PROFILE ----------------
 export const getProfile = async (req, res) => {
   try {
-    const user = req.user;
-    const existingUser = await User.findById(user.id);
-    if (!existingUser) {
-      return res.status(401).json({ message: "Unauthorized" });
-    }
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(401).json({ success: false, message: "Unauthorized" });
 
     res.status(200).json({
-      message: "Profile fetched successfully",
+      success: true,
       user: {
-        id: existingUser._id,
-        name: existingUser.name,
-        email: existingUser.email,
-        avatarUrl: existingUser.avatarUrl,
-        isBlocked: existingUser.isBlocked,
-        loginProvider: existingUser.loginProvider,
-        isEmailVerified: existingUser.isEmailVerified,
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        avatarUrl: user.avatarUrl,
+        isEmailVerified: user.isEmailVerified,
+        role: user.role,
         createdAt: user.createdAt,
       },
     });
-  } catch (error) {
-    console.error("Get profile error:", error.message);
-    res.status(500).json({ message: "Server error" });
+  } catch (err) {
+    console.error("Profile Error:", err.message);
+    res.status(500).json({ success: false, message: "Server error" });
   }
 };
 
-
-
-
-export const logout = async (req, res) => {
+// ---------------- LOGOUT ----------------
+export const logout = (req, res) => {
   try {
-    res.setHeader("Authorization", ""); // clear the header
-    res.status(200).json({ message: "Logged out successfully.." });
-  } catch (error) {
-    console.error("Logout error:", error.message);
-    res.status(500).json({ message: "Server error" });
+    res.setHeader("Authorization", "");
+    res.status(200).json({ success: true, message: "Logged out successfully" });
+  } catch (err) {
+    res.status(500).json({ success: false, message: "Logout error" });
   }
 };
+
+// ---------------- REQUEST OTP ----------------
+export const requestEmailVerificationOTP = async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ success: false, message: "Email is required." });
+
+    const user = await User.findOne({ email: email.toLowerCase().trim() });
+    if (!user) return res.status(404).json({ success: false, message: "User not found." });
+
+    await requestEmailOTP(email);
+    res.status(200).json({ success: true, message: "OTP sent to your email." });
+  } catch (err) {
+    console.error("OTP Request Error:", err.message);
+    res.status(500).json({ success: false, message: "Failed to send OTP." });
+  }
+};
+
+// ---------------- VERIFY OTP ----------------
+export const verifyEmailOTP = async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+    if (!email || !otp)
+      return res.status(400).json({ success: false, message: "Email and OTP are required." });
+
+     const user = await User.findOne({ email: email.toLowerCase().trim() });
+    if (!user) return res.status(404).json({ success: false, message: "User not found." });
+
+    const isValid = verifyOTPUtil(email, otp);
+    if (!isValid) return res.status(400).json({ success: false, message: "Invalid or expired OTP." });
+
+    await User.findOneAndUpdate({ email: email.toLowerCase().trim() }, { isEmailVerified: true });
+    res.status(200).json({ success: true, message: "Email verified successfully." });
+  } catch (err) {
+    console.error("OTP Verify Error:", err.message);
+    res.status(500).json({ success: false, message: "OTP verification failed." });
+  }
+};
+
+

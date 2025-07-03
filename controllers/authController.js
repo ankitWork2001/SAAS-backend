@@ -55,11 +55,11 @@ export const register = async (req, res) => {
     res.status(201).json({
       success: true,
       message: "User registered. Please verify your email.",
-       newUser
+      newUser
     });
   } catch (err) {
     console.error("Register Error:", err.message);
-    res.status(500).json({ success: false, message: "Server error",error: err.message });
+    res.status(500).json({ success: false, message: "Server error", error: err.message });
   }
 };
 
@@ -85,12 +85,12 @@ export const login = async (req, res) => {
     res.status(200).json({
       success: true,
       message: "Login successful",
-      user ,
+      user,
       token,
     });
   } catch (err) {
     console.error("Login Error:", err.message);
-    res.status(500).json({ success: false, message: "Server error",error: err.message });
+    res.status(500).json({ success: false, message: "Server error", error: err.message });
   }
 };
 
@@ -102,11 +102,11 @@ export const getProfile = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      user 
+      user
     });
   } catch (err) {
     console.error("Profile Error:", err.message);
-    res.status(500).json({ success: false, message: "Server error" ,error: err.message});
+    res.status(500).json({ success: false, message: "Server error", error: err.message });
   }
 };
 
@@ -116,7 +116,7 @@ export const logout = (req, res) => {
     res.setHeader("Authorization", "");
     res.status(200).json({ success: true, message: "Logged out successfully" });
   } catch (err) {
-    res.status(500).json({ success: false, message: "Logout error" ,error: err.message});
+    res.status(500).json({ success: false, message: "Logout error", error: err.message });
   }
 };
 
@@ -133,7 +133,7 @@ export const requestEmailVerificationOTP = async (req, res) => {
     res.status(200).json({ success: true, message: "OTP sent to your email." });
   } catch (err) {
     console.error("OTP Request Error:", err.message);
-    res.status(500).json({ success: false, message: "Failed to send OTP.",error: err.message });
+    res.status(500).json({ success: false, message: "Failed to send OTP.", error: err.message });
   }
 };
 
@@ -144,7 +144,7 @@ export const verifyEmailOTP = async (req, res) => {
     if (!email || !otp)
       return res.status(400).json({ success: false, message: "Email and OTP are required." });
 
-     const user = await User.findOne({ email: email.toLowerCase().trim() });
+    const user = await User.findOne({ email: email.toLowerCase().trim() });
     if (!user) return res.status(404).json({ success: false, message: "User not found." });
 
     const isValid = verifyOTPUtil(email, otp);
@@ -154,7 +154,7 @@ export const verifyEmailOTP = async (req, res) => {
     res.status(200).json({ success: true, message: "Email verified successfully." });
   } catch (err) {
     console.error("OTP Verify Error:", err.message);
-    res.status(500).json({ success: false, message: "OTP verification failed.",error: err.message });
+    res.status(500).json({ success: false, message: "OTP verification failed.", error: err.message });
   }
 };
 

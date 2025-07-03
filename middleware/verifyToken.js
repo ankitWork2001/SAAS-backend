@@ -1,16 +1,39 @@
 import jwt from "jsonwebtoken";
-export const verifyToken = (req, res, next) => {
-  const token = req.headers.authorization?.split(" ")[1];
-  if (!token) return res.status(401).json({ message: "Unauthorized" });
+import User from "../models/User.js";
+import dotenv from "dotenv";
 
+dotenv.config();
+
+export const verifyToken = async (req, res, next) => {
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = { userId: decoded.id };
-    next();
-  } catch (err) {
-    return res.status(401).json({ message: "Invalid token" });
+    // Get token from Authorization header: "Bearer <token>"
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({ message: "No token provided" });
+    }
+
+    const token = authHeader.split(" ")[1];
+    // console.log(token);
+    // Verify token
+    const decoded = jwt.verify(
+      token,
+      process.env.JWT_SECRET || "supersecretkey"
+    );
+
+    // Find user by ID from token payload
+    const user = await User.findById(decoded.id).select("-password"); // Exclude password
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Attach user to request
+    req.user = user;
+
+    next(); // Continue to next middleware/route
+  } catch (error) {
+    console.error("Auth Error:", error.message);
+    return res.status(401).json({ message: "Invalid or expired token" });
   }
 };
-
-
-

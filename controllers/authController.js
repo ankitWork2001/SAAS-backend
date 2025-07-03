@@ -50,7 +50,7 @@ export const register = async (req, res) => {
     const newUser = new User({ name, email, password, mobile, avatarUrl });
     await newUser.save();
 
-    await requestEmailOTP(email);
+    // await requestEmailOTP(email);   
 
     res.status(201).json({
       success: true,

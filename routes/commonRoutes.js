@@ -5,11 +5,11 @@ import { verifyToken } from "../middleware/verifyToken.js";
 
 const router = express.Router();
 
-router.get("/view-plan", verifyToken, viewPlanById);
+router.get("/view-plan/:id", verifyToken, viewPlanById);
 
 router.get("/view-allPlans", verifyToken, viewAllAvailablePlans);
 
-router.get("/view-product", verifyToken, viewProductById);
+router.get("/view-product/:id", verifyToken, viewProductById);
 
 router.get("/view-allProducts", verifyToken, viewAllAvailableProducts);
 

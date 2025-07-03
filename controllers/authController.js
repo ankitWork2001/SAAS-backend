@@ -55,17 +55,11 @@ export const register = async (req, res) => {
     res.status(201).json({
       success: true,
       message: "User registered. Please verify your email.",
-      user: {
-        id: newUser._id,
-        name: newUser.name,
-        email: newUser.email,
-        mobile: newUser.mobile,
-        avatarUrl: newUser.avatarUrl,
-      },
+       newUser
     });
   } catch (err) {
     console.error("Register Error:", err.message);
-    res.status(500).json({ success: false, message: "Server error" });
+    res.status(500).json({ success: false, message: "Server error",error: err.message });
   }
 };
 
@@ -91,18 +85,12 @@ export const login = async (req, res) => {
     res.status(200).json({
       success: true,
       message: "Login successful",
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        avatarUrl: user.avatarUrl,
-        isEmailVerified: user.isEmailVerified,
-      },
+      user ,
       token,
     });
   } catch (err) {
     console.error("Login Error:", err.message);
-    res.status(500).json({ success: false, message: "Server error" });
+    res.status(500).json({ success: false, message: "Server error",error: err.message });
   }
 };
 
@@ -114,19 +102,11 @@ export const getProfile = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        avatarUrl: user.avatarUrl,
-        isEmailVerified: user.isEmailVerified,
-        role: user.role,
-        createdAt: user.createdAt,
-      },
+      user 
     });
   } catch (err) {
     console.error("Profile Error:", err.message);
-    res.status(500).json({ success: false, message: "Server error" });
+    res.status(500).json({ success: false, message: "Server error" ,error: err.message});
   }
 };
 
@@ -136,7 +116,7 @@ export const logout = (req, res) => {
     res.setHeader("Authorization", "");
     res.status(200).json({ success: true, message: "Logged out successfully" });
   } catch (err) {
-    res.status(500).json({ success: false, message: "Logout error" });
+    res.status(500).json({ success: false, message: "Logout error" ,error: err.message});
   }
 };
 
@@ -153,7 +133,7 @@ export const requestEmailVerificationOTP = async (req, res) => {
     res.status(200).json({ success: true, message: "OTP sent to your email." });
   } catch (err) {
     console.error("OTP Request Error:", err.message);
-    res.status(500).json({ success: false, message: "Failed to send OTP." });
+    res.status(500).json({ success: false, message: "Failed to send OTP.",error: err.message });
   }
 };
 
@@ -174,7 +154,7 @@ export const verifyEmailOTP = async (req, res) => {
     res.status(200).json({ success: true, message: "Email verified successfully." });
   } catch (err) {
     console.error("OTP Verify Error:", err.message);
-    res.status(500).json({ success: false, message: "OTP verification failed." });
+    res.status(500).json({ success: false, message: "OTP verification failed.",error: err.message });
   }
 };
 

@@ -5,7 +5,6 @@ import { isAdmin } from "../middleware/role.js";
 import {introducePlan, blockPlan, updatePlan, activateBlockedPlan} from "../controllers/Admins/planController.js";
 import {introduceProduct, blockProduct, updateProduct , viewAllProducts} from "../controllers/Admins/productController.js";
 import {allUsers, blockUser} from "../controllers/Admins/userController.js";
-import { viewAllAvailableProducts } from "../controllers/productController.js";
 
 const router = express.Router();
 

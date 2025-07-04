@@ -7,7 +7,7 @@ import Subscription from "../models/Subscription.js";
 export const createOrder = async (req, res) => {
   try {
     const { planId } = req.body;
-    const { userId } = req.user;
+    const userId = req.user.id;
 
     const plan = await Plan.findById(planId);
     if (!plan) return res.status(404).json({ message: "Plan not found" });
@@ -26,10 +26,17 @@ export const createOrder = async (req, res) => {
       payment_capture: 1,
     });
 
+    // Date logic
+    const startDate = new Date();
+    const endDate = new Date();
+    endDate.setMonth(endDate.getMonth() + 1); // 1 month validity
+
     const newSub = new Subscription({
-      userId,
-      planId,
+      user: userId,
+      plan: planId,
       razorpayOrderId: order.id,
+      startDate,
+      endDate,
     });
 
     await newSub.save();

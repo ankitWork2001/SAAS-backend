@@ -21,3 +21,5 @@ router.post("/add-plan", verifyToken, isAdmin, introducePlan);
 router.post("/block-plan/:planID", verifyToken, isAdmin, blockPlan);
 router.post("/activate-plan/:planID", verifyToken, isAdmin, activateBlockedPlan);
 router.put("/update-plan/:planID", verifyToken, isAdmin, updatePlan);
+
+export default router;

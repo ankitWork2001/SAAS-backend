@@ -1,4 +1,3 @@
-import User from "../models/User.js";
 
 export const isAdmin = (req, res, next) => {
   try {

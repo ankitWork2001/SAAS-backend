@@ -1,8 +1,8 @@
 import express from "express";
-import { isAdmin } from "../middleware/isAdmin.js";
+import { isAdmin } from "../middleware/role.js";
 import { createOrder, verifyPayment, viewUserOrderHistory, fetchOwnOrder } from "../controllers/paymentController.js";
-import { fetchPayment, viewAllOrders } from "../controllers/adminController.js";
-import { verifyToken } from "../middleware/auth.middleware";
+import { fetchPayment, viewAllOrders } from "../controllers/Admins/paymentController.js";
+import { verifyToken } from "../middleware/verifyToken.js";
 
 const router = express.Router();
 

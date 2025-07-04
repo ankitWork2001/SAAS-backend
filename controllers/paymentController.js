@@ -77,11 +77,13 @@ export const viewUserOrderHistory = async (req, res) => {
 
 export const fetchOwnOrder = async (req, res) => {
   try {
-    const { orderId } = req.params;
+    if (!req.user) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
     const userId = req.user.id;
 
-    const order = await Order.findOne({ userId, orderId });
-    if (!order) return res.status(404).json({ message: "Order not found" });
+    const orders = await Subscription.find({ userId });
+    if (!orders) return res.status(404).json({ message: "Order not found" });
 
     res.status(200).json({ success: true, order });
   } catch (error) {

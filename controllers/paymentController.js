@@ -63,3 +63,31 @@ export const verifyPayment = async (req, res) => {
     return res.status(500).json({ message: "Internal server error" });
   }
 };
+
+export const viewUserOrderHistory = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const orders = await Order.find({ userId });
+    res.status(200).json({ success: true, orders });
+  } catch (error) {
+    console.error("Error fetching user payment history:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export const fetchOwnOrder = async (req, res) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+    const userId = req.user.id;
+
+    const orders = await Subscription.find({ userId });
+    if (!orders) return res.status(404).json({ message: "Order not found" });
+
+    res.status(200).json({ success: true, order });
+  } catch (error) {
+    console.error("Error fetching own order:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};

@@ -9,11 +9,10 @@ import authRoutes from "./routes/authRoutes.js";
 import commonRoutes from "./routes/commonRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
-
+import paymentRoutes from "./routes/paymentRoutes.js";
 dotenv.config();
 
 const app = express();
-
 
 // Middleware Setup
 app.use(helmet());
@@ -34,6 +33,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api", commonRoutes);
 app.use("/ap/user", userRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/payment", paymentRoutes);
 
 app.get("/", (req, res) => {
   res.send("API is running...");

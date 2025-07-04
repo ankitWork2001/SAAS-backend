@@ -1,10 +1,16 @@
 import express from "express";
-import { createOrder, verifyPayment } from "../controllers/paymentController.js";
+import { isAdmin } from "../middleware/isAdmin.js";
+import { createOrder, verifyPayment, viewUserOrderHistory, fetchOwnOrder } from "../controllers/paymentController.js";
+import { fetchPayment, viewAllOrders } from "../controllers/adminController.js";
 import { verifyToken } from "../middleware/auth.middleware";
 
 const router = express.Router();
 
 router.post("/create-order", verifyToken, createOrder);
 router.post("/verify", verifyToken, verifyPayment);
+router.get("/my-history", verifyToken, viewUserOrderHistory);
+router.get("/my-order/:orderId", verifyToken, fetchOwnOrder);
+router.get("/:userid/:id", verifyToken, isAdmin, fetchPayment);
+router.get("/history", verifyToken, isAdmin, viewAllOrders);
 
 export default router;

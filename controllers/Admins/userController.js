@@ -13,17 +13,17 @@ export const allUsers = async (req, res) => {
 
 export const blockUser = async (req, res) => {
   const { userID } = req.params;
-
   try {
-    const user = await User.findById(userID);
+    const user = await User.findByIdAndUpdate(
+      userID,
+      { status: "blocked" },
+      { new: true, runValidators: false }
+    );
     if (!user) {
       return res
         .status(404)
         .json({ success: false, message: "User not found." });
     }
-
-    user.isBlocked = true;
-    await user.save();
 
     res
       .status(200)

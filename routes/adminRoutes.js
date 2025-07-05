@@ -19,7 +19,7 @@ import { allUsers, blockUser } from "../controllers/Admins/userController.js";
 const router = express.Router();
 
 router.get("/users", verifyToken, isAdmin, allUsers);
-router.post("/block-user/:userID", verifyToken, isAdmin, blockUser);
+router.get("/block-user/:userID", verifyToken, isAdmin, blockUser);
 
 router.post("/add-product", verifyToken, isAdmin, introduceProduct);
 router.get("/block-product/:productId", verifyToken, isAdmin, blockProduct);

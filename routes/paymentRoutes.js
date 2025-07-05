@@ -10,7 +10,7 @@ router.post("/create-order", verifyToken, createOrder);
 router.post("/verify", verifyToken, verifyPayment);
 router.get("/my-history", verifyToken, viewUserOrderHistory);
 router.get("/my-order/:orderId", verifyToken, fetchOwnOrder);
-router.get("/:userid/:id", verifyToken, isAdmin, fetchPayment);
+router.get("/:userid/:orderId", verifyToken, isAdmin, fetchPayment);
 router.get("/history", verifyToken, isAdmin, viewAllOrders);
 
 export default router;

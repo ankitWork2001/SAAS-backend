@@ -88,9 +88,9 @@ export const fetchOwnOrder = async (req, res) => {
       return res.status(401).json({ message: "Unauthorized" });
     }
     const userId = req.user.id;
-
-    const orders = await Subscription.find({ userId });
-    if (!orders) return res.status(404).json({ message: "Order not found" });
+    const { orderId } = req.params;
+    const order = await Subscription.findOne({ userId, razorpayOrderId: orderId });
+    if (!order) return res.status(404).json({ message: "Order not found" });
 
     res.status(200).json({ success: true, order });
   } catch (error) {

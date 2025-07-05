@@ -74,7 +74,7 @@ export const verifyPayment = async (req, res) => {
 export const viewUserOrderHistory = async (req, res) => {
   try {
     const userId = req.user.id;
-    const orders = await Order.find({ userId });
+    const orders = await Subscription.find({ userId });
     res.status(200).json({ success: true, orders });
   } catch (error) {
     console.error("Error fetching user payment history:", error);

@@ -20,18 +20,18 @@ import { allUsers, blockUser , activateBlockedUser} from "../controllers/Admins/
 const router = express.Router();
 
 router.get("/users", verifyToken, isAdmin, allUsers);
-router.get("/block-user/:userID", verifyToken, isAdmin, blockUser);
-router.get("/activate-user/:userID", verifyToken, isAdmin, activateBlockedUser);
+router.patch("/block-user/:userID", verifyToken, isAdmin, blockUser);
+router.patch("/activate-user/:userID", verifyToken, isAdmin, activateBlockedUser);
 
 router.post("/add-product", verifyToken, isAdmin, introduceProduct);
-router.get("/block-product/:productId", verifyToken, isAdmin, blockProduct);
+router.patch("/block-product/:productId", verifyToken, isAdmin, blockProduct);
 router.put("/update-product/:productId", verifyToken, isAdmin, updateProduct);
-router.get("/activate-product/:productId", verifyToken, isAdmin, activateBlockedProduct);
+router.patch("/activate-product/:productId", verifyToken, isAdmin, activateBlockedProduct);
 router.get("/products", verifyToken, isAdmin, viewAllProducts);
 
 router.post("/add-plan", verifyToken, isAdmin, introducePlan);
-router.get("/block-plan/:planID", verifyToken, isAdmin, blockPlan);
-router.get("/activate-plan/:planID", verifyToken, isAdmin, activateBlockedPlan);
+router.patch("/block-plan/:planID", verifyToken, isAdmin, blockPlan);
+router.patch("/activate-plan/:planID", verifyToken, isAdmin, activateBlockedPlan);
 router.put("/update-plan/:planID", verifyToken, isAdmin, updatePlan);
 
 export default router;

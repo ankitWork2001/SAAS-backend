@@ -13,17 +13,20 @@ import {
   blockProduct,
   updateProduct,
   viewAllProducts,
+  activateBlockedProduct
 } from "../controllers/Admins/productController.js";
-import { allUsers, blockUser } from "../controllers/Admins/userController.js";
+import { allUsers, blockUser , activateBlockedUser} from "../controllers/Admins/userController.js";
 
 const router = express.Router();
 
 router.get("/users", verifyToken, isAdmin, allUsers);
 router.get("/block-user/:userID", verifyToken, isAdmin, blockUser);
+router.get("/activate-user/:userID", verifyToken, isAdmin, activateBlockedUser);
 
 router.post("/add-product", verifyToken, isAdmin, introduceProduct);
 router.get("/block-product/:productId", verifyToken, isAdmin, blockProduct);
 router.put("/update-product/:productId", verifyToken, isAdmin, updateProduct);
+router.get("/activate-product/:productId", verifyToken, isAdmin, activateBlockedProduct);
 router.get("/products", verifyToken, isAdmin, viewAllProducts);
 
 router.post("/add-plan", verifyToken, isAdmin, introducePlan);

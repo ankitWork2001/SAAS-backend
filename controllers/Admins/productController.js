@@ -42,6 +42,29 @@ export const blockProduct = async (req, res) => {
   }
 };
 
+
+export const activateBlockedProduct = async (req, res) => {
+  const { productId } = req.params;
+
+  try {
+    const product = await Product.findById(productId);
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    product.isAvailable = true;
+    await product.save();
+
+    res.status(200).json({ message: "Product activated successfully" });
+  } catch (error) {
+    console.error("Error blocking product:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+
+
+
 export const updateProduct = async (req, res) => {
   const { productId } = req.params;
   const { name, description, isAvailable } = req.body;

@@ -31,7 +31,7 @@ try {
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api", commonRoutes);
-app.use("/ap/user", userRoutes);
+app.use("/api/user", userRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/payment", paymentRoutes);
 

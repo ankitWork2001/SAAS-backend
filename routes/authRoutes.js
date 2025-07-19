@@ -17,8 +17,8 @@ router.post("/ownAdmin/login", login);
 router.get("/ownAdmin/profile", verifyToken, getProfile);
 router.post("/ownAdmin/logout",logout);
 
-// Email verification OTP
-router.post("/request-otp", requestEmailVerificationOTP);
-router.post("/verify-otp", verifyEmailOTP);
+// Email verification OTP    ---- under re-view 
+// router.post("/request-otp", requestEmailVerificationOTP);
+// router.post("/verify-otp", verifyEmailOTP);
 
 export default router;

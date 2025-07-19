@@ -16,6 +16,7 @@ const generateToken = (userId) => {
 };
 
 // ---------------- REGISTER ----------------
+
 export const register = async (req, res) => {
   try {
     let { name, email, password, mobile } = req.body;

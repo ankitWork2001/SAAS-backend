@@ -80,7 +80,13 @@ export const login = async (req, res) => {
     if (!isMatch) return res.status(401).json({ success: false, message: "Invalid credentials." });
 
     const token = generateToken(user._id);
-    res.setHeader("Authorization", `Bearer ${token}`);
+    res.cookie("token", token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "strict",
+    maxAge: 24 * 60 * 60 * 1000,    // 1 day
+  });
+   // res.setHeader("Authorization", `Bearer ${token}`);
 
     res.status(200).json({
       success: true,
@@ -113,7 +119,13 @@ export const getProfile = async (req, res) => {
 // ---------------- LOGOUT ----------------
 export const logout = (req, res) => {
   try {
-    res.setHeader("Authorization", "");
+    res.clearCookie("token", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+    });
+
+    // res.setHeader("Authorization", "");
     res.status(200).json({ success: true, message: "Logged out successfully" });
   } catch (err) {
     res.status(500).json({ success: false, message: "Logout error" ,error: err.message});

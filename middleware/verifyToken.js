@@ -6,21 +6,25 @@ dotenv.config();
 
 export const verifyToken = async (req, res, next) => {
   try {
-    // Get token from Authorization header: "Bearer <token>"
-    const authHeader = req.headers.authorization;
+    let token; // Declare token here
 
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    // 1. Check for token in Authorization header
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith("Bearer ")) {
+      // Extract the token part after "Bearer "
+      token = authHeader.split(" ")[1];
+    } else if (req.cookies.token) {
+      // 2. Check for token in cookies (if not found in header)
+      token = req.cookies.token;
+    }
+
+    if (!token) {
       return res.status(401).json({ message: "No token provided" });
     }
 
-      const token = req.cookies.token;
-
-    // const token = authHeader.split(" ")[1];
-    // console.log(token);
-    // Verify token
     const decoded = jwt.verify(
       token,
-      process.env.JWT_SECRET || "supersecretkey"
+      process.env.JWT_SECRET || "supersecretkey" // Use your actual secret
     );
 
     // Find user by ID from token payload
@@ -36,6 +40,13 @@ export const verifyToken = async (req, res, next) => {
     next(); // Continue to next middleware/route
   } catch (error) {
     console.error("Auth Error:", error.message);
-    return res.status(401).json({ message: "Invalid or expired token" });
+    // More specific error messages can be helpful during development
+    if (error.name === "TokenExpiredError") {
+      return res.status(401).json({ message: "Token has expired" });
+    }
+    if (error.name === "JsonWebTokenError") {
+      return res.status(401).json({ message: "Invalid token" });
+    }
+    return res.status(401).json({ message: "Authentication failed" });
   }
 };
